@@ -43,6 +43,10 @@ job "caddy" {
         http://cadvisor.home {
             reverse_proxy 127.0.0.1:8090
         }
+
+        http://prometheus.home {
+            reverse_proxy 127.0.0.1:9090
+        }
         EOT
     }
       

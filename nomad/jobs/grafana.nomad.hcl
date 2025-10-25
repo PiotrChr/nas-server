@@ -1,13 +1,13 @@
 job "grafana" {
   datacenters = ["dc1"]
-  type = "service"
+  type        = "service"
 
   group "grafana" {
     network {
       mode = "bridge"
       port "http" {
         static = 3000
-        to = 3000
+        to     = 3000
       }
     }
 
@@ -19,6 +19,7 @@ job "grafana" {
     task "grafana" {
       driver = "docker"
 
+      # Resolve Postgres via Consul and inject as env
       template {
         destination = "secrets/db.env"
         env         = true
@@ -32,9 +33,29 @@ job "grafana" {
         EOT
       }
 
+      # Provision Prometheus datasource via Consul discovery (no hardcoded IPs)
+      template {
+        destination = "local/provisioning/datasources/prometheus.yaml"
+        change_mode = "restart"
+        data = <<-YAML
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: proxy
+            isDefault: true
+            url: http://{{ with service "prometheus" }}{{ (index . 0).Address }}:{{ (index . 0).Port }}{{ end }}
+            jsonData:
+              timeInterval: 15s
+        YAML
+      }
+
       config {
         image = "grafana/grafana-oss:latest"
         ports = ["http"]
+        volumes = [
+          "local/provisioning:/etc/grafana/provisioning"
+        ]
       }
 
       volume_mount {
@@ -42,8 +63,23 @@ job "grafana" {
         destination = "/var/lib/grafana"
       }
 
+      service {
+        name         = "grafana"
+        port         = "http"
+        address_mode = "host"
+        check {
+          name     = "http"
+          type     = "http"
+          method   = "GET"
+          path     = "/api/health"
+          interval = "15s"
+          timeout  = "2s"
+          port     = "http"
+        }
+      }
+
       resources {
-        cpu    = 300
+        cpu    = 400
         memory = 256
       }
     }

@@ -53,6 +53,10 @@ run-cadvisor:
 	@bash -c 'set -a && source .env && set +a && \
 	envsubst < nomad/jobs/cadvisor.nomad.hcl | nomad job run -'
 
+run-prometheus:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/prometheus.nomad.hcl | nomad job run -'
+
 ssh: check-env
 	@bash -lc 'set -a; source $(ENV_FILE); set +a; \
 		ssh -i $$KEY $$USER@$$HOST'
@@ -65,5 +69,9 @@ help:
 	@echo "  check           - Check what changes would be made by the Ansible playbook"
 	@echo "  run-postgres    - Deploy or update the PostgreSQL Nomad job"
 	@echo "  run-grafana     - Deploy or update the Grafana Nomad job"
+	@echo "  run-caddy       - Deploy or update the Caddy Nomad job"
+	@echo "  run-node-exporter - Deploy or update the Node Exporter Nomad job"
+	@echo "  run-cadvisor    - Deploy or update the cAdvisor Nomad job"
+	@echo "  run-prometheus  - Deploy or update the Prometheus Nomad job"
 	@echo "  ssh             - SSH into the NAS server"
 	@echo "  help            - Show this help message"
