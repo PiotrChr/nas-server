@@ -1,0 +1,40 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - git
+      - curl
+      - vim
+      - net-tools
+      - smartmontools
+      - ufw
+      - avahi-daemon
+      - zfsutils-linux
+    state: present
+
+- name: Ensure mount points exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /data
+    - /fast
+    - /bulk1
+    - /bulk2
+    - /archive
+
+- name: UFW allow SSH
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled

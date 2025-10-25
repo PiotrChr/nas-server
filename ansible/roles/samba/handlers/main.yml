@@ -1,0 +1,5 @@
+---
+- name: restart smbd
+  systemd:
+    name: smbd
+    state: restarted

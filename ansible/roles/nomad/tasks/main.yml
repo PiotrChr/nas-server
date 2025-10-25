@@ -1,0 +1,110 @@
+---
+- name: Add HashiCorp GPG
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add HashiCorp repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    state: present
+    filename: hashicorp
+
+- name: Install Nomad
+  apt:
+    name: nomad
+    state: present
+    update_cache: yes
+
+- name: Allow Nomad UI from local network only
+  ufw:
+    rule: allow
+    port: 4646
+    proto: tcp
+    src: 192.168.1.0/24
+
+- name: Create Nomad config dir
+  file:
+    path: /etc/nomad.d
+    state: directory
+    mode: "0755"
+
+- name: Ensure data directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+    recurse: yes
+  loop:
+    - "{{ prom_data_dir }}"
+    - "{{ graf_data_dir }}"
+    - "{{ bulk_data_dir }}"
+    - "{{ sys_data_dir }}"
+    - "{{ postgres }}"
+
+- name: Ensure Caddy dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ caddy_data_dir }}"
+    - "{{ caddy_config_dir }}"
+
+- name: Allow HTTP/HTTPS on LAN
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: 192.168.1.0/24
+  loop:
+    - "80"
+    - "443"
+
+- name: Set Prometheus data ownership (65534:65534)
+  command: chown -R 65534:65534 "{{ prom_data_dir }}"
+
+- name: Set Grafana data ownership (472:472)
+  command: chown -R 472:472 "{{ graf_data_dir }}"
+
+- name: Set Bulk data ownership (1000:1000)
+  command: chown -R 1000:1000 "{{ bulk_data_dir }}"
+
+- name: Set Sys data ownership (1000:1000)
+  command: chown -R 1000:1000 "{{ sys_data_dir }}"
+
+- name: Set Postgres data ownership (1002:1002)
+  command: chown -R 1002:1002 "{{ postgres }}"
+
+- name: Ensure CNI directory exists
+  file:
+    path: /opt/cni/bin
+    state: directory
+    mode: "0755"
+
+# Ubuntu/Debian: packaged plugins
+- name: Install CNI plugins
+  apt:
+    name: containernetworking-plugins
+    state: present
+    update_cache: yes
+
+- name: Symlink CNI plugins into /opt/cni/bin if present in /usr/lib/cni
+  file:
+    src: "/usr/lib/cni/{{ item }}"
+    dest: "/opt/cni/bin/{{ item }}"
+    state: link
+  loop:
+    - bridge
+    - host-local
+    - loopback
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Deploy Nomad config with host volumes
+  template:
+    src: nomad.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    mode: "0644"
+  notify: restart nomad
+
+  

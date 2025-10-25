@@ -1,0 +1,43 @@
+data_dir  = "/opt/nomad"
+bind_addr = "0.0.0.0"
+
+server {
+  enabled          = true
+  bootstrap_expect = 1
+}
+
+consul {
+  address = "127.0.0.1:8500"
+}
+
+client {
+  enabled = true
+
+  host_volume "prom_data"        { path = "{{ prom_data_dir }}" read_only = false }
+  host_volume "graf_data"        { path = "{{ graf_data_dir }}" read_only = false }
+  host_volume "bulk_data"        { path = "{{ bulk_data_dir }}" read_only = false }
+  host_volume "sys_data"         { path = "{{ sys_data_dir }}"  read_only = false }
+  host_volume "postgres"         { path = "{{ postgres }}" read_only = false }
+
+  host_volume "caddy_data"       { path = "{{ caddy_data_dir }}"  read_only = false }
+  host_volume "caddy_conf"       { path = "{{ caddy_config_dir }}" read_only = false }
+
+  cni_path       = "/opt/cni/bin:/usr/lib/cni:/usr/libexec/cni"
+  cni_config_dir = "/etc/cni/net.d"
+}
+
+plugin "docker" {
+  config {
+    # allow host bind-mounts from task config.volumes = ["host:ctr:mode"]
+    volumes {
+      enabled = true
+    }
+    # allow tasks to request privileged=true (needed for cAdvisor)
+    allow_privileged = true
+  }
+}
+
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+}

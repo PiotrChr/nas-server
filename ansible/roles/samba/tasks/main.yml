@@ -1,0 +1,84 @@
+---
+- name: Install Samba
+  apt:
+    name: samba
+    state: present
+
+- name: Ensure firewall allows SMB
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "445"
+    - "139"
+
+- name: Ensure 'users' group exists
+  group:
+    name: users
+    state: present
+
+- name: Define Samba users from env
+  set_fact:
+    samba_users:
+      - { name: "{{ lookup('env', 'SAMBA_MAIN_USER') }}",  password: "{{ lookup('env', 'SAMBA_MAIN_PASSWORD') }}", shell: omit }
+      - { name: "{{ lookup('env', 'SAMBA_GUEST_USER') }}", password: "{{ lookup('env', 'SAMBA_GUEST_PASSWORD') }}", shell: "/usr/sbin/nologin" }
+
+- name: Ensure UNIX users exist and belong to 'users'
+  user:
+    name: "{{ item.name }}"
+    state: present
+    groups: users
+    append: yes
+  loop: "{{ samba_users }}"
+
+- name: Generate smb.conf (macOS-friendly)
+  template:
+    dest: /etc/samba/smb.conf
+    mode: "0644"
+    src: smb.conf.j2
+  notify: restart smbd
+
+- name: Ensure Samba tooling present
+  apt:
+    name: samba-common-bin
+    state: present
+
+- name: Ensure system users exist (do not change shell for existing accounts)
+  block:
+    - name: Read existing passwd entry
+      command: getent passwd {{ item.name }}
+      register: _passwd
+      failed_when: false
+      changed_when: false
+      loop: "{{ samba_users }}"
+      loop_control: { label: "{{ item.name }}" }
+
+    - name: Create system user if missing (set shell only on create)
+      user:
+        name: "{{ item.0.name }}"
+        state: present
+        shell: "{{ item.0.shell | default(omit) }}"
+      when: _p.rc != 0
+      vars:
+        _p: "{{ item.1 }}"
+      loop: "{{ samba_users | zip(_passwd.results) | list }}"
+      loop_control: { label: "{{ item.0.name }}" }
+
+- name: Ensure Samba users exist and set password
+  shell: |
+    set -e
+    if pdbedit -L | grep -q "^{{ item.name }}:"; then
+      exit 0
+    fi
+    printf "%s\n%s\n" "{{ item.password }}" "{{ item.password }}" | smbpasswd -s -a {{ item.name }}
+  args:
+    executable: /bin/bash
+  loop: "{{ samba_users }}"
+
+
+- name: Enable & start smbd
+  systemd:
+    name: smbd
+    enabled: yes
+    state: started

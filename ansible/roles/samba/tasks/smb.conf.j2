@@ -1,0 +1,31 @@
+[global]
+  workgroup = WORKGROUP
+  server string = NAS
+  map to guest = never
+  server min protocol = SMB2
+  smb encrypt = desired
+  ea support = yes
+  vfs objects = catia fruit streams_xattr
+  fruit:metadata = stream
+  fruit:resource = stream
+  fruit:locking = none
+  interfaces = 127.0.0.1 {{ ansible_default_ipv4.address }}
+  bind interfaces only = yes
+
+[bulk1]
+  path = /bulk1
+  read only = no
+  browsable = yes
+  valid users = @users
+
+[bulk2]
+  path = /bulk2
+  read only = no
+  browsable = yes
+  valid users = @users
+
+[fast]
+  path = /fast
+  read only = no
+  browsable = yes
+  valid users = @users

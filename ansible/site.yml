@@ -1,0 +1,14 @@
+---
+- name: Configure NAS Home Server
+  hosts: nas
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - base
+    - docker
+    - consul
+    - dnsmasq
+    - nomad
+    - samba

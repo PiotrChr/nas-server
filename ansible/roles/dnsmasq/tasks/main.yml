@@ -1,0 +1,43 @@
+---
+- name: Install dnsmasq
+  apt:
+    name: dnsmasq
+    state: present
+    update_cache: yes
+
+- name: Configure dnsmasq for .home and .consul
+  copy:
+    dest: /etc/dnsmasq.d/home.conf
+    mode: "0644"
+    content: |
+      domain-needed
+      bogus-priv
+      no-resolv
+      server=1.1.1.1
+      server=8.8.8.8
+      address=/.home/{{ ansible_default_ipv4.address }}
+      server=/consul/127.0.0.1#8600
+      interface={{ ansible_default_ipv4.interface }}
+      bind-interfaces
+
+- name: Allow DNS (TCP/UDP) on LAN
+  ufw:
+    rule: allow
+    port: "53"
+    proto: "{{ item }}"
+    src: 192.168.1.0/24
+  loop: ["tcp","udp"]
+
+- name: Allow 9090, 8080, 9100 tcp on LAN
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: 192.168.1.0/24
+  loop: [9090, 8080, 8090, 9100]
+
+- name: Enable & restart dnsmasq
+  systemd:
+    name: dnsmasq
+    enabled: yes
+    state: restarted

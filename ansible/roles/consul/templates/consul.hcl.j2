@@ -1,0 +1,13 @@
+datacenter = "home"
+node_name  = "nas"
+
+server            = true
+bootstrap_expect  = 1
+
+bind_addr      = "{{ ansible_default_ipv4.address }}"
+advertise_addr = "{{ ansible_default_ipv4.address }}"
+client_addr    = "0.0.0.0"
+
+data_dir = "/opt/consul"
+
+ui_config { enabled = true }

@@ -1,0 +1,8 @@
+prom_data_dir: /data/metrics/prometheus
+graf_data_dir: /data/metrics/grafana
+bulk_data_dir: /bulk2/data
+sys_data_dir:  /data/general
+postgres: /data/postgres
+
+caddy_data_dir: /data/proxy/caddy/data
+caddy_config_dir: /data/proxy/caddy/config

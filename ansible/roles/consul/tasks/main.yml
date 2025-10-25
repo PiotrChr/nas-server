@@ -1,0 +1,83 @@
+---
+- name: Add HashiCorp GPG
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add HashiCorp repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    filename: hashicorp
+    state: present
+
+- name: Install Consul
+  apt:
+    name: consul
+    state: present
+    update_cache: yes
+
+- name: Ensure Consul config dir
+  file:
+    path: /etc/consul.d
+    state: directory
+    mode: "0755"
+
+- name: Drop consul.hcl (single node)
+  template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    mode: "0644"
+  notify: restart consul
+
+- name: Remove stray non-config files from /etc/consul.d
+  file:
+    path: /etc/consul.d/consul.env
+    state: absent
+
+- name: Ensure systemd drop-in dir for consul exists
+  file:
+    path: /etc/systemd/system/consul.service.d
+    state: directory
+    mode: "0755"
+
+- name: Create systemd override for consul (simple service)
+  copy:
+    dest: /etc/systemd/system/consul.service.d/override.conf
+    mode: "0644"
+    content: |
+      [Service]
+      Type=simple
+      ExecStart=
+      ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/
+      TimeoutStartSec=0
+  notify: daemon-reload consul
+
+- name: Allow Consul UI/API and DNS on LAN
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    src: 192.168.1.0/24
+  loop:
+    - { port: "8500", proto: "tcp" }   # HTTP/UI
+    - { port: "8600", proto: "tcp" }   # DNS TCP
+    - { port: "8600", proto: "udp" }   # DNS UDP
+    - { port: "8300", proto: "tcp" }   # server RPC (harmless on single node)
+    - { port: "8301", proto: "tcp" }   # serf LAN TCP
+    - { port: "8301", proto: "udp" }   # serf LAN UDP
+  notify: daemon-reload consul
+
+- name: Enable & start Consul
+  systemd:
+    name: consul
+    enabled: yes
+    state: started
+
+- name: Wait for Consul HTTP to be up
+  uri:
+    url: "http://127.0.0.1:8500/v1/status/leader"
+    return_content: yes
+  register: consul_leader
+  retries: 30
+  delay: 1
+  until: consul_leader.status == 200
