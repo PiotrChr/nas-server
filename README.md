@@ -125,17 +125,12 @@ resources/
 
 Import-ready dashboards live in `resources/grafana/dashboards`. Use Grafana's **Dashboards → Import → Upload JSON** dialog and point to the desired file. Each dashboard assumes the default Prometheus datasource created by the Grafana job.
 
-- **Nomad & System Services** – aggregate health view for Nomad allocations, Consul, and system-level exporters.  
-  ![Nomad and System Services dashboard](resources/readme/NomadandSystemServices.gif)
-
-- **Node & Container Detail** – correlates host metrics from Node Exporter with container stats from cAdvisor.  
-  ![Node and container dashboard](resources/readme/Nodeandcontainers.gif)
-
-- **Router Overview** – visualizes SNMP metrics for the edge router, including interface throughput and errors.  
-  ![Router overview dashboard](resources/readme/RouterOverview.gif)
-
-- **Postgres Health** – query performance, cache hit ratios, and I/O gleaned from the custom exporter queries.  
-  ![Postgres dashboard](resources/readme/Postgres.gif)
+| Dashboard JSON                            | Focus                                                     | Preview |
+| ----------------------------------------- | --------------------------------------------------------- | ------- |
+| `nomad_and_system.json`                   | Aggregate health for Nomad allocations, Consul, exporters | ![Nomad and System Services dashboard](resources/readme/NomadandSystemServices.gif) |
+| `node_and_container.json`                 | Correlates host metrics with cAdvisor container stats     | ![Node and container dashboard](resources/readme/Nodeandcontainers.gif) |
+| `network_single_router.json`              | Router SNMP throughput/errors for the edge network        | ![Router overview dashboard](resources/readme/RouterOverview.gif) |
+| `postgres.json`                           | Query performance, cache hit ratio, and Postgres I/O      | ![Postgres dashboard](resources/readme/Postgres.gif) |
 
 Feel free to customize and re-export updated JSON into the same directory.
 
