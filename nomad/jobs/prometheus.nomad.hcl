@@ -31,11 +31,11 @@ job "prometheus" {
         scrape_configs:
           - job_name: "self"
             static_configs:
-              - targets: ["127.0.0.1:9090"]
+              - targets: ["192.168.1.119:9090"]
 
           - job_name: "node"
             consul_sd_configs:
-              - server: "127.0.0.1:8500"
+              - server: "192.168.1.119:8500"
                 services: ["node-exporter"]
             relabel_configs:
               - source_labels: ["__meta_consul_service_address","__meta_consul_service_port"]
@@ -45,7 +45,7 @@ job "prometheus" {
 
           - job_name: "cadvisor"
             consul_sd_configs:
-              - server: "127.0.0.1:8500"
+              - server: "192.168.1.119:8500"
                 services: ["cadvisor"]
             relabel_configs:
               - source_labels: ["__meta_consul_service_address","__meta_consul_service_port"]
@@ -66,6 +66,24 @@ job "prometheus" {
               format: ["prometheus"]
             static_configs:
               - targets: ["127.0.0.1:8500"]
+        
+          - job_name: "postgres"
+            consul_sd_configs:
+              - server: "192.168.1.119:8500"
+                services: ["postgres-exporter"]
+            relabel_configs:
+              - source_labels: ["__meta_consul_service_address","__meta_consul_service_port"]
+                regex: "(.+);(.*)"
+                replacement: "$1:$2"
+                target_label: "__address__"
+
+          - job_name: "router-snmp"
+            metrics_path: /snmp
+            params:
+                module: ["if_mib"]
+                target: ["192.168.1.1"]
+            static_configs:
+                - targets: ["192.168.1.119:9116"]
         EOT
       }
 

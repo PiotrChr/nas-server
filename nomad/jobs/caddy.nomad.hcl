@@ -45,7 +45,7 @@ job "caddy" {
         }
 
         http://prometheus.home {
-            reverse_proxy 127.0.0.1:9090
+            reverse_proxy 127.0.0.1:9090 
         }
         EOT
     }

@@ -4,7 +4,7 @@ job "grafana" {
 
   group "grafana" {
     network {
-      mode = "bridge"
+      mode = "host"
       port "http" {
         static = 3000
         to     = 3000
@@ -53,6 +53,7 @@ job "grafana" {
       config {
         image = "grafana/grafana-oss:latest"
         ports = ["http"]
+        network_mode = "host"
         volumes = [
           "local/provisioning:/etc/grafana/provisioning"
         ]

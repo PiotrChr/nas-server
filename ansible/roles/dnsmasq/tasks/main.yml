@@ -34,7 +34,13 @@
     port: "{{ item }}"
     proto: tcp
     src: 192.168.1.0/24
-  loop: [9090, 8080, 8090, 9100]
+  loop:
+    - 9090    # Prometheus
+    - 8080    # cAdvisor or web UI
+    - 8090    # optional
+    - 9100    # node exporter
+    - 9187    # postgres exporter
+    - 9116    # snmp exporter
 
 - name: Enable & restart dnsmasq
   systemd:
