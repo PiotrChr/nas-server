@@ -1,0 +1,1 @@
+We should automate the whole setup (including drive setup), IPs, installable services, wizzard

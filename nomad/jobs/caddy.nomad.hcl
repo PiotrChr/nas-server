@@ -47,6 +47,9 @@ job "caddy" {
         http://prometheus.home {
             reverse_proxy 127.0.0.1:9090 
         }
+        http://kvm.home {
+            reverse_proxy 192.168.1.149
+        }
         EOT
     }
       
