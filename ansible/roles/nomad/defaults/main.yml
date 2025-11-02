@@ -1,8 +1,19 @@
 prom_data_dir: /data/metrics/prometheus
 graf_data_dir: /data/metrics/grafana
+elastic_data_dir: /data/metrics/elastic
 bulk_data_dir: /bulk2/data
 sys_data_dir:  /data/general
 postgres: /data/postgres
 
 caddy_data_dir: /data/proxy/caddy/data
 caddy_config_dir: /data/proxy/caddy/config
+
+torrent_downloads_dir: /fast/downloads
+torrent_config_dir: /fast/torrent_config
+
+plex_config_dir: /fast/plex/config
+plex_transcode_dir: /fast/plex/transcode
+plex_media_dir: /fast/plex/media
+
+movies_library_dir: /fast/Movies
+music_library_dir: /fast/Music

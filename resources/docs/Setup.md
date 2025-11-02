@@ -65,6 +65,7 @@ Install minimal dependencies for Ansible and ZFS:
 ```bash
 sudo apt update
 sudo apt install -y git curl python3 net-tools vim zfsutils-linux smartmontools ufw avahi-daemon
+sudo sysctl -w vm.max_map_count=262144  # Elasticsearch requirement, Ansible will persist it later
 ```
 
 ---

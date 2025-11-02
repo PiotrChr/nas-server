@@ -17,6 +17,9 @@ Hands-free provisioning for a home-lab NAS built on **Ansible**, **Nomad**, **Co
 | **PostgreSQL**         | Primary stateful service and Grafana datastore.                                      |
 | **Prometheus**         | Time-series collection and alerting foundation.                                      |
 | **Grafana**            | Dashboards and visualizations, pre-provisioned with Prometheus datasource.           |
+| **Elasticsearch**      | Home-lab search and log storage, single-node with persistent data.                   |
+| **Kibana**             | Elastic stack UI for dashboards, log search, and stack management.                   |
+| **Filebeat**           | Lightweight log shipper tailing host & container logs into Elasticsearch.           |
 | **Node Exporter**      | Host telemetry (CPU, memory, disk, network).                                         |
 | **cAdvisor**           | Container-level metrics for all Nomad allocations.                                   |
 | **PostgreSQL Exporter**| Deep Postgres metrics with extended queries (pg\_stat\_statements, latency, I/O).     |
@@ -71,6 +74,7 @@ resources/
 
    * `HOST`, `USER`, `KEY` for Ansible connectivity.
    * `POSTGRES_*` and `GRAFANA_*` credentials.
+   * `ELASTIC_*` and `KIBANA_SYSTEM_PASSWORD` for the Elastic stack (see `.env.dist` for names).
    * `NOMAD_ADDR` (e.g. `http://nomad.home:4646`) to make the Nomad CLI and Makefile targets work against the UI/API.
 
 3. **Provision the host.**
@@ -88,6 +92,9 @@ resources/
    | `make run-postgres`      | PostgreSQL with `pg_stat_statements` tuned. |
    | `make run-grafana`       | Grafana with Consul-driven datasource.      |
    | `make run-prometheus`    | Prometheus scrape config with Consul SD.    |
+   | `make run-elasticsearch` | Elasticsearch single-node cluster with persistent data. |
+   | `make run-kibana`        | Kibana UI connected to the in-cluster Elasticsearch. |
+   | `make run-filebeat`      | Filebeat log shipper sending host/container logs into Elasticsearch. |
    | `make run-node-exporter` | Host metrics exporter.                      |
    | `make run-cadvisor`      | Container metrics exporter.                 |
    | `make run-caddy`         | Reverse proxy for `*.home` services.        |
@@ -121,6 +128,14 @@ resources/
 
 ---
 
+## Logging & Search
+
+* **Elasticsearch** (`elasticsearch.home`) runs as a single-node cluster on the Optane-backed `/data/elastic` volume. The `.env` file seeds the `elastic` superuser and `kibana_system` account.
+* **Filebeat** tails `/var/log/*.log` and Docker container logs on the host, forwarding them into Elasticsearch. Metrics are exposed on `:5066` (Consul service `filebeat`), and the job deploys via `make run-filebeat`.
+* **Kibana** (`kibana.home`) connects through Consul service discovery with the `kibana_system` account and uses `KIBANA_ENCRYPTION_KEY` (if provided) for secure saved objects. Deploy via `make run-kibana` once Elasticsearch is healthy.
+
+---
+
 ## Grafana Dashboards
 
 Import-ready dashboards live in `resources/grafana/dashboards`. Use Grafana's **Dashboards → Import → Upload JSON** dialog and point to the desired file. Each dashboard assumes the default Prometheus datasource created by the Grafana job.
@@ -144,6 +159,8 @@ Feel free to customize and re-export updated JSON into the same directory.
 | `https://consul.home`     | Consul UI                            |
 | `https://grafana.home`    | Grafana dashboards                   |
 | `https://prometheus.home` | Prometheus UI for ad-hoc queries     |
+| `https://kibana.home`     | Kibana for Elastic stack exploration |
+| `https://elasticsearch.home` | Elasticsearch API endpoint (secured) |
 | `https://cadvisor.home`   | cAdvisor UI (useful for spot checks) |
 
 `dnsmasq` (provisioned by Ansible) resolves `*.home` to the NAS IP, so make sure LAN clients use it as their DNS forwarder.

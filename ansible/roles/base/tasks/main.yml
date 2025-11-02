@@ -17,6 +17,14 @@
       - zfsutils-linux
     state: present
 
+- name: Ensure vm.max_map_count meets Elasticsearch requirement
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
 - name: Ensure mount points exist
   file:
     path: "{{ item }}"

@@ -1,4 +1,4 @@
-.PHONY: default help ssh ping run check run-samba run-postgres run-grafana run-caddy run-node-exporter run-cadvisor run-prometheus check-env check-envsubst run-postgres-exporter
+.PHONY: default help ssh ping run check run-samba run-postgres run-grafana run-caddy run-node-exporter run-cadvisor run-prometheus check-env check-envsubst run-postgres-exporter run-elasticsearch run-kibana run-filebeat run-snmp-exporter run-qbittorrent
 
 SHELL := /bin/bash
 
@@ -70,6 +70,26 @@ run-snmp-exporter:
 	@bash -c 'set -a && source .env && set +a && \
 	envsubst < nomad/jobs/snmp-exporter.nomad.hcl | nomad job run -'
 
+run-elasticsearch:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/elasticsearch.nomad.hcl | nomad job run -'
+
+run-kibana:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/kibana.nomad.hcl | nomad job run -'
+
+run-filebeat:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/filebeat.nomad.hcl | nomad job run -'
+
+run-qbittorrent:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/qbittorrent.nomad.hcl | nomad job run -'
+
+run-plex:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/plex.nomad.hcl | nomad job run -'
+
 help:
 	@echo "Makefile commands:"
 	@echo "  ping            - Ping the NAS server using Ansible"
@@ -85,5 +105,10 @@ help:
 	@echo "  run-cadvisor    - Deploy or update the cAdvisor Nomad job"
 	@echo "  run-prometheus  - Deploy or update the Prometheus Nomad job"
 	@echo "  run-postgres-exporter - Deploy or update the PostgreSQL Exporter Nomad job"
+	@echo "  run-snmp-exporter - Deploy or update the SNMP Exporter Nomad job"
+	@echo "  run-elasticsearch - Deploy or update the Elasticsearch Nomad job"
+	@echo "  run-kibana      - Deploy or update the Kibana Nomad job"
+	@echo "  run-filebeat    - Deploy or update the Filebeat Nomad job"
+	@echo "  run-qbittorrent - Deploy or update the qBittorrent Nomad job"
 	@echo "  ssh             - SSH into the NAS server"
 	@echo "  help            - Show this help message"

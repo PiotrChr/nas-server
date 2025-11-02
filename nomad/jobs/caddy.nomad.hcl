@@ -40,6 +40,14 @@ job "caddy" {
             reverse_proxy 127.0.0.1:3000
         }
 
+        http://kibana.home {
+            reverse_proxy 127.0.0.1:5601
+        }
+
+        http://elasticsearch.home {
+            reverse_proxy 127.0.0.1:9200
+        }
+
         http://cadvisor.home {
             reverse_proxy 127.0.0.1:8090
         }
@@ -47,9 +55,20 @@ job "caddy" {
         http://prometheus.home {
             reverse_proxy 127.0.0.1:9090 
         }
+
         http://kvm.home {
             reverse_proxy 192.168.1.149
         }
+        
+        # TODO: Fix this, qbittorrent doesn't bind to localhost properly
+        http://torrent.home {
+            reverse_proxy 192.168.1.119:8111
+        }
+
+        http://plex.home {
+            reverse_proxy 192.168.1.119:32400
+        }
+
         EOT
     }
       

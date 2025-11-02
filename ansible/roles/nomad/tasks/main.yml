@@ -38,9 +38,19 @@
   loop:
     - "{{ prom_data_dir }}"
     - "{{ graf_data_dir }}"
+    - "{{ elastic_data_dir }}"
     - "{{ bulk_data_dir }}"
     - "{{ sys_data_dir }}"
     - "{{ postgres }}"
+    - "{{ torrent_downloads_dir }}"
+    - "{{ caddy_data_dir }}"
+    - "{{ caddy_config_dir }}"
+    - "{{ torrent_config_dir }}"
+    - "{{ plex_config_dir }}"
+    - "{{ plex_transcode_dir }}"
+    - "{{ plex_media_dir }}"
+    - "{{ movies_library_dir }}"
+    - "{{ music_library_dir }}"
 
 - name: Ensure Caddy dirs
   file:
@@ -66,6 +76,9 @@
 
 - name: Set Grafana data ownership (472:472)
   command: chown -R 472:472 "{{ graf_data_dir }}"
+
+- name: Set Elasticsearch data ownership (1000:1000)
+  command: chown -R 1000:1000 "{{ elastic_data_dir }}"
 
 - name: Set Bulk data ownership (1000:1000)
   command: chown -R 1000:1000 "{{ bulk_data_dir }}"

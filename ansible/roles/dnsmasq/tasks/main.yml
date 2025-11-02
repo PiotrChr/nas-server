@@ -41,6 +41,10 @@
     - 9100    # node exporter
     - 9187    # postgres exporter
     - 9116    # snmp exporter
+    - 5601    # Kibana
+    - 9200    # Elasticsearch
+    - 8111    # qBittorrent
+    - 32400   # Plex
 
 - name: Enable & restart dnsmasq
   systemd:
