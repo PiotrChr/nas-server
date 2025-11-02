@@ -45,6 +45,14 @@
     - 9200    # Elasticsearch
     - 8111    # qBittorrent
     - 32400   # Plex
+    - 6379    # Redis
+    - 2283    # Immich
+    - 3003    # Immich ML
+    - 5000    # Docker Registry 
+
+- name: restart ufw
+  ufw:
+    state: reloaded
 
 - name: Enable & restart dnsmasq
   systemd:

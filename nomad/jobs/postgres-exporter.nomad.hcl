@@ -65,6 +65,7 @@ job "postgres-exporter" {
       config {
         image  = "prometheuscommunity/postgres-exporter:v0.15.0"
         ports  = ["http"]
+        network_mode = "host"
         args = [
           "--no-collector.stat_bgwriter"
         ]

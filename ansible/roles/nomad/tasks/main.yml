@@ -51,7 +51,12 @@
     - "{{ plex_media_dir }}"
     - "{{ movies_library_dir }}"
     - "{{ music_library_dir }}"
-
+    - "{{ redis_data_dir }}"
+    - "{{ immich_uploads_dir }}"
+    - "{{ immich_ml_cache_dir }}"
+    - "{{ docker_registry_data }}"
+    - "{{ filebeat_data_dir }}"
+    
 - name: Ensure Caddy dirs
   file:
     path: "{{ item }}"
@@ -86,8 +91,17 @@
 - name: Set Sys data ownership (1000:1000)
   command: chown -R 1000:1000 "{{ sys_data_dir }}"
 
-- name: Set Postgres data ownership (1002:1002)
-  command: chown -R 1002:1002 "{{ postgres }}"
+- name: Set Postgres data ownership (999:999)
+  command: chown -R 999:999 "{{ postgres }}"
+
+- name: Set Redis data ownership (999:999)
+  command: chown -R 999:999 "{{ redis_data_dir }}"
+
+- name: Set Docker Registry data ownership (1000:1000)
+  command: chown -R 1000:1000 "{{ docker_registry_data }}"
+
+- name: Set filebeat data ownership (1000:1000)
+  command: chown -R 1000:1000 "{{ filebeat_data_dir }}"
 
 - name: Ensure CNI directory exists
   file:

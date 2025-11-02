@@ -1,97 +1,129 @@
 job "filebeat" {
-  datacenters = ["dc1"]
   type        = "system"
+  datacenters = ["dc1"]
 
   group "filebeat" {
     network {
       mode = "host"
+
       port "http" {
-        static = 5066
         to     = 5066
+        static = 5066
       }
+    }
+
+    volume "docker_containers" {
+      type      = "host"
+      source    = "docker_containers"
+      read_only = true
+    }
+
+    volume "filebeat_data" {
+      type      = "host"
+      source    = "filebeat_data"
+      read_only = false
     }
 
     task "filebeat" {
       driver = "docker"
-
+      user   = "root"
+      
       env {
-        ELASTIC_USER     = "${ELASTIC_USER}"
+        ELASTIC_USERNAME = "${ELASTIC_USERNAME}"
         ELASTIC_PASSWORD = "${ELASTIC_PASSWORD}"
+        TZ               = "Europe/Zurich"
       }
 
-      # TODO: When creating automation, we need to parametrize things like: filebeath image version
       template {
         destination = "local/filebeat.yml"
         change_mode = "restart"
-        data = <<-YAML
+        data = <<-EOT
         filebeat.inputs:
+          - type: container
+            id: docker-containers
+            enabled: true
+            paths:
+              - /var/lib/docker/containers/*/*.log
+            processors:
+              - add_docker_metadata: ~
+              - add_host_metadata: ~
           - type: filestream
             id: system-logs
             paths:
               - /var/log/*.log
-            ignore_older: 72h
-          - type: filestream
-            id: docker-containers
-            paths:
-              - /var/lib/docker/containers/*/*.log
-            ignore_older: 72h
-            parsers:
-              - ndjson:
-                  target: ""
-                  overwrite_keys: true
-                  add_error_key: true
-
-        processors:
-          - add_host_metadata: ~
-          - add_cloud_metadata: ~
 
         output.elasticsearch:
-          hosts: ["http://{{ with service \"elasticsearch\" }}{{ (index . 0).Address }}:{{ (index . 0).Port }}{{ end }}"]
-          username: "${ELASTIC_USER}"
-          password: "${ELASTIC_PASSWORD}"
-          ssl.enabled: false
+          hosts: ["http://{{ with service "elasticsearch" }}{{ (index . 0).Address }}:{{ (index . 0).Port }}{{ end }}"]
+          username: ${ELASTIC_USERNAME}
+          password: ${ELASTIC_PASSWORD}
 
-        setup.template.enabled: true
-        setup.ilm.enabled: true
+        setup.kibana:
+          host: "http://{{ with service "kibana" }}{{ (index . 0).Address }}:{{ (index . 0).Port }}{{ end }}"
 
         http.enabled: true
         http.host: 0.0.0.0
         http.port: 5066
 
-        logging.to_files: false
-        YAML
+        logging.to_stderr: true
+        logging.level: info
+        EOT
       }
 
       config {
-        image        = "docker.elastic.co/beats/filebeat:8.15.3"
+        image = "docker.elastic.co/beats/filebeat:8.15.2"
+        ports = ["http"]
         network_mode = "host"
-        ports        = ["http"]
-        args         = ["-e"]
+        privileged   = true
+        args = [
+          "-e",
+          "-c", "/usr/share/filebeat/filebeat.yml",
+        ]
+
+        mounts = [
+          {
+            type        = "bind"
+            target      = "/var/lib/docker/containers"
+            source      = "/var/lib/docker/containers"
+            readonly    = true
+            bind_options = {
+              propagation = "rslave"
+            }
+          },
+          {
+            type     = "bind"
+            target   = "/var/run/docker.sock"
+            source   = "/var/run/docker.sock"
+            readonly = true
+          }
+        ]
+
         volumes = [
-          "/var/log:/var/log:ro",
-          "/var/lib/docker/containers:/var/lib/docker/containers:ro",
-          "local/filebeat.yml:/usr/share/filebeat/filebeat.yml"
+          "local/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro",
         ]
       }
 
+      volume_mount {
+        volume      = "filebeat_data"
+        destination = "/usr/share/filebeat/data"
+        read_only   = false
+      }
+
       service {
-        name         = "filebeat"
-        port         = "http"
-        address_mode = "host"
-        tags         = ["logging", "elk"]
+        name = "filebeat"
+        port = "http"
+
         check {
           name     = "http"
           type     = "http"
-          method   = "GET"
           path     = "/"
           interval = "15s"
-          timeout  = "5s"
+          timeout  = "2s"
         }
       }
 
       resources {
         cpu    = 300
-        memory = 256
+        memory = 384
       }
     }
   }

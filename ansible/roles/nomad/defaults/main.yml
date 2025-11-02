@@ -17,3 +17,14 @@ plex_media_dir: /fast/plex/media
 
 movies_library_dir: /fast/Movies
 music_library_dir: /fast/Music
+
+redis_data_dir: /data/redis
+
+immich_uploads_dir: /fast/immich/uploads
+immich_ml_cache_dir: /fast/immich/ml-cache
+
+docker_registry_data: /bulk1/docker/registry_data
+
+docker_containers_dir: /var/lib/docker/containers
+
+filebeat_data_dir: /data/filebeat

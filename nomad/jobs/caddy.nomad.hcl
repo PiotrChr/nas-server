@@ -65,8 +65,16 @@ job "caddy" {
             reverse_proxy 192.168.1.119:8111
         }
 
-        http://plex.home {
+        http://tv.home {
             reverse_proxy 192.168.1.119:32400
+        }
+
+        http://media.home {
+            reverse_proxy 192.168.1.119:2283
+        }
+
+        http://registry.home {
+            reverse_proxy 192.168.1.119:5000
         }
 
         EOT

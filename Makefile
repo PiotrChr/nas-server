@@ -90,6 +90,22 @@ run-plex:
 	@bash -c 'set -a && source .env && set +a && \
 	envsubst < nomad/jobs/plex.nomad.hcl | nomad job run -'
 
+run-redis:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/redis.nomad.hcl | nomad job run -'
+
+run-immich:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/immich.nomad.hcl | nomad job run -'
+
+run-docker-registry:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/docker-registry.nomad.hcl | nomad job run -'
+
+run-filebeat:
+	@bash -c 'set -a && source .env && set +a && \
+	envsubst < nomad/jobs/filebeat.nomad.hcl | nomad job run -'
+
 help:
 	@echo "Makefile commands:"
 	@echo "  ping            - Ping the NAS server using Ansible"
@@ -110,5 +126,10 @@ help:
 	@echo "  run-kibana      - Deploy or update the Kibana Nomad job"
 	@echo "  run-filebeat    - Deploy or update the Filebeat Nomad job"
 	@echo "  run-qbittorrent - Deploy or update the qBittorrent Nomad job"
+	@echo "  run-plex        - Deploy or update the Plex Nomad job"
+	@echo "  run-redis       - Deploy or update the Redis Nomad job"
+	@echo "  run-immich      - Deploy or update the Immich Nomad job"
+	@echo "  run-docker-registry - Deploy or update the Docker Registry Nomad job"
+	@echo "  run-filebeat    - Deploy or update the Filebeat Nomad job"
 	@echo "  ssh             - SSH into the NAS server"
 	@echo "  help            - Show this help message"
