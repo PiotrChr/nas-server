@@ -24,6 +24,11 @@ Hands-free provisioning for a home-lab NAS built on **Ansible**, **Nomad**, **Co
 | **cAdvisor**           | Container-level metrics for all Nomad allocations.                                   |
 | **PostgreSQL Exporter**| Deep Postgres metrics with extended queries (pg\_stat\_statements, latency, I/O).     |
 | **SNMP Exporter**      | Router telemetry (if\_mib) for network health dashboards.                            |
+| **Redis**              | Persistent cache and job queue backing Immich with append-only persistence.         |
+| **Immich**             | Self-hosted photo/video backup with ML inference companion.                         |
+| **Plex**               | Media server with GPU-ready transcoding and shared library mounts.                  |
+| **qBittorrent**        | Torrent automation feeding Plex libraries and shared downloads.                     |
+| **Docker Registry**    | Private OCI registry with delete support for local image workflows.                 |
 
 ![Nomad service overview](resources/readme/NomadServiceOverview.png)
 
@@ -34,27 +39,41 @@ Hands-free provisioning for a home-lab NAS built on **Ansible**, **Nomad**, **Co
 ```
 ansible/
   roles/
+    base/
     consul/
     docker/
     nomad/
     samba/
     dnsmasq/
+  inventory/
   site.yml
 dbs/
   exporter.sql
+  grafana.sql
+  immich.sql
 nomad/jobs/
   cadvisor.nomad.hcl
   caddy.nomad.hcl
+  docker-registry.nomad.hcl
+  elasticsearch.nomad.hcl
+  filebeat.nomad.hcl
   grafana.nomad.hcl
+  immich.nomad.hcl
+  kibana.nomad.hcl
   node-exporter.nomad.hcl
+  plex.nomad.hcl
   postgres.nomad.hcl
   postgres-exporter.nomad.hcl
   prometheus.nomad.hcl
+  qbittorrent.nomad.hcl
+  redis.nomad.hcl
   snmp-exporter.nomad.hcl
 resources/
   docs/Setup.md              # Manual bootstrap checklist before Ansible
   grafana/dashboards/*.json  # Import-ready Grafana dashboards
   readme/*                   # Images & gifs referenced below
+todo/
+  *.md                       # Planning notes
 ```
 
 ---
@@ -76,6 +95,7 @@ resources/
    * `POSTGRES_*` and `GRAFANA_*` credentials.
    * `ELASTIC_*` and `KIBANA_SYSTEM_PASSWORD` for the Elastic stack (see `.env.dist` for names).
    * `NOMAD_ADDR` (e.g. `http://nomad.home:4646`) to make the Nomad CLI and Makefile targets work against the UI/API.
+   * `PLEX_CLAIM` (optional) for first-run pairing of the Plex container with your Plex account.
 
 3. **Provision the host.**
 
@@ -95,6 +115,11 @@ resources/
    | `make run-elasticsearch` | Elasticsearch single-node cluster with persistent data. |
    | `make run-kibana`        | Kibana UI connected to the in-cluster Elasticsearch. |
    | `make run-filebeat`      | Filebeat log shipper sending host/container logs into Elasticsearch. |
+   | `make run-redis`         | Redis datastore with append-only persistence (Immich dependency). |
+   | `make run-immich`        | Immich web/API + ML workloads (requires Postgres + Redis). |
+   | `make run-qbittorrent`   | qBittorrent Web UI bound to shared download volume. |
+   | `make run-plex`          | Plex Media Server with GPU passthrough support. |
+   | `make run-docker-registry` | Private Docker Registry with delete API enabled. |
    | `make run-node-exporter` | Host metrics exporter.                      |
    | `make run-cadvisor`      | Container metrics exporter.                 |
    | `make run-caddy`         | Reverse proxy for `*.home` services.        |
@@ -110,6 +135,15 @@ resources/
    ```
 
    The script creates the `exporter` role, grants permissions, and enables `pg_stat_statements`.
+
+6. **Optional: pre-create application databases.**
+
+   ```bash
+   psql -h <postgres-host> -U ${POSTGRES_USER} -f dbs/grafana.sql
+   psql -h <postgres-host> -U ${POSTGRES_USER} -f dbs/immich.sql
+   ```
+
+   `grafana.sql` provisions a dedicated database/user, while `immich.sql` creates the Immich role, database, and required extensions (`cube`, `earthdistance`, `vector`).
 
 ---
 
@@ -133,6 +167,21 @@ resources/
 * **Elasticsearch** (`elasticsearch.home`) runs as a single-node cluster on the Optane-backed `/data/elastic` volume. The `.env` file seeds the `elastic` superuser and `kibana_system` account.
 * **Filebeat** tails `/var/log/*.log` and Docker container logs on the host, forwarding them into Elasticsearch. Metrics are exposed on `:5066` (Consul service `filebeat`), and the job deploys via `make run-filebeat`.
 * **Kibana** (`kibana.home`) connects through Consul service discovery with the `kibana_system` account and uses `KIBANA_ENCRYPTION_KEY` (if provided) for secure saved objects. Deploy via `make run-kibana` once Elasticsearch is healthy.
+
+---
+
+## Media & Downloads
+
+* **qBittorrent** (`make run-qbittorrent`) exposes the Web UI on `torrent.home` and writes downloads to the `torrent_downloads` volume shared with Plex. Adjust ports, authentication, or volume mappings in `nomad/jobs/qbittorrent.nomad.hcl`.
+* **Plex** (`make run-plex`) serves `tv.home`, mounts `/fast/plex/*` for metadata and transcodes, and mounts media libraries from `/fast/Movies` and `/fast/Music`. Populate `PLEX_CLAIM` before the first deploy to auto-link the server to your Plex account; hardware transcoding is enabled via `/dev/dri`.
+* **Immich** (`make run-immich`) runs the web/API service and ML worker in a single job. It expects the Postgres job to be healthy, Redis reachable on `:6379`, and the host volumes defined in `ansible/roles/nomad/defaults/main.yml` (`/fast/immich/uploads`, `/fast/immich/ml-cache`). If Redis lives elsewhere, edit the connection details inside `nomad/jobs/immich.nomad.hcl`.
+* **Redis** (`make run-redis`) backs Immich queues/cache with append-only persistence under `/data/redis`. The job registers a `redis` service in Consul for future service-discovery driven templates.
+
+---
+
+## Private Registry
+
+`make run-docker-registry` deploys a single-node registry served at `registry.home` (port `5000`). Data lives on the `docker_registry_data` host path managed by the Nomad role, and delete support is enabled so local CI/CD can prune tags. Pair it with Caddy or another TLS terminator before exposing it beyond the LAN.
 
 ---
 
@@ -162,6 +211,10 @@ Feel free to customize and re-export updated JSON into the same directory.
 | `https://kibana.home`     | Kibana for Elastic stack exploration |
 | `https://elasticsearch.home` | Elasticsearch API endpoint (secured) |
 | `https://cadvisor.home`   | cAdvisor UI (useful for spot checks) |
+| `http://torrent.home`     | qBittorrent Web UI                   |
+| `http://tv.home`          | Plex UI (LAN only)                   |
+| `http://media.home`       | Immich web app                       |
+| `http://registry.home`    | Docker Registry API                  |
 
 `dnsmasq` (provisioned by Ansible) resolves `*.home` to the NAS IP, so make sure LAN clients use it as their DNS forwarder.
 
