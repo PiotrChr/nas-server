@@ -20,7 +20,7 @@ music_library_dir: /fast/Music
 
 redis_data_dir: /data/redis
 
-immich_uploads_dir: /fast/immich/uploads
+immich_uploads_dir: /bulk/immich/uploads
 immich_ml_cache_dir: /fast/immich/ml-cache
 
 docker_registry_data: /bulk1/docker/registry_data

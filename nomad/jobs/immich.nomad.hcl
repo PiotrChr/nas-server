@@ -44,7 +44,10 @@ job "immich" {
       env {
         TZ                     = "Europe/Zurich"
         MACHINE_LEARNING_CACHE = "/cache"
-        MACHINE_LEARNING_URL   = "http://127.0.0.1:3003"
+        MACHINE_LEARNING_URL   = "http://192.168.1.119:3003"
+        GUNICORN_CMD_ARGS      = "--workers 1 --threads 2 --timeout 180"
+        OMP_NUM_THREADS        = "1"
+        OPENBLAS_NUM_THREADS   = "1"
       }
 
       config {
@@ -61,8 +64,8 @@ job "immich" {
       }
 
       resources {
-        cpu    = 400
-        memory = 1024
+        cpu    = 1000
+        memory = 3024
       }
 
       service {
@@ -81,7 +84,10 @@ job "immich" {
     # ----------------- Immich Server (web + API) -----------------
     task "server" {
       driver = "docker"
-
+      env {
+        TZ = "Europe/Zurich"
+        MACHINE_LEARNING_URL = "http://192.168.1.119:3003"
+      }
       template {
         destination = "local/immich.env"
         env         = true
@@ -92,7 +98,6 @@ job "immich" {
         DB_USERNAME=immich
         DB_PASSWORD=immichpass
         DB_DATABASE_NAME=immich
-        MACHINE_LEARNING_URL="{{ with service "immich-ml" }}http://{{ (index . 0).Address }}:{{ (index . 0).Port }}{{ end }}"
         IMMICH_BIND_ADDRESS="0.0.0.0"
 
         REDIS_HOSTNAME="192.168.1.119"
@@ -104,6 +109,8 @@ job "immich" {
         image = "ghcr.io/immich-app/immich-server:release"
         ports = ["http"]
         network_mode = "host"
+        volumes      = ["/dev/dri:/dev/dri"]
+        privileged = true
       }
 
       volume_mount {
@@ -113,8 +120,8 @@ job "immich" {
       }
 
       resources {
-        cpu    = 1000
-        memory = 2048
+        cpu    = 6000
+        memory = 3048
       }
 
       service {
