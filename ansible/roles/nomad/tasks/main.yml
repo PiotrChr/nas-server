@@ -29,42 +29,18 @@
     state: directory
     mode: "0755"
 
-- name: Ensure data directories exist
+- name: Ensure Nomad host volumes exist
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    mode: "0755"
-    recurse: yes
-  loop:
-    - "{{ prom_data_dir }}"
-    - "{{ graf_data_dir }}"
-    - "{{ elastic_data_dir }}"
-    - "{{ bulk_data_dir }}"
-    - "{{ sys_data_dir }}"
-    - "{{ postgres }}"
-    - "{{ torrent_downloads_dir }}"
-    - "{{ caddy_data_dir }}"
-    - "{{ caddy_config_dir }}"
-    - "{{ torrent_config_dir }}"
-    - "{{ plex_config_dir }}"
-    - "{{ plex_transcode_dir }}"
-    - "{{ plex_media_dir }}"
-    - "{{ movies_library_dir }}"
-    - "{{ music_library_dir }}"
-    - "{{ redis_data_dir }}"
-    - "{{ immich_uploads_dir }}"
-    - "{{ immich_ml_cache_dir }}"
-    - "{{ docker_registry_data }}"
-    - "{{ filebeat_data_dir }}"
-    
-- name: Ensure Caddy dirs
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "{{ caddy_data_dir }}"
-    - "{{ caddy_config_dir }}"
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default(omit) }}"
+    group: "{{ item.group | default(omit) }}"
+    recurse: "{{ item.recurse | default(true) }}"
+  loop: "{{ nomad_host_volumes }}"
+  when: item.ensure | default(true)
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Allow HTTP/HTTPS on LAN
   ufw:
@@ -75,33 +51,6 @@
   loop:
     - "80"
     - "443"
-
-- name: Set Prometheus data ownership (65534:65534)
-  command: chown -R 65534:65534 "{{ prom_data_dir }}"
-
-- name: Set Grafana data ownership (472:472)
-  command: chown -R 472:472 "{{ graf_data_dir }}"
-
-- name: Set Elasticsearch data ownership (1000:1000)
-  command: chown -R 1000:1000 "{{ elastic_data_dir }}"
-
-- name: Set Bulk data ownership (1000:1000)
-  command: chown -R 1000:1000 "{{ bulk_data_dir }}"
-
-- name: Set Sys data ownership (1000:1000)
-  command: chown -R 1000:1000 "{{ sys_data_dir }}"
-
-- name: Set Postgres data ownership (999:999)
-  command: chown -R 999:999 "{{ postgres }}"
-
-- name: Set Redis data ownership (999:999)
-  command: chown -R 999:999 "{{ redis_data_dir }}"
-
-- name: Set Docker Registry data ownership (1000:1000)
-  command: chown -R 1000:1000 "{{ docker_registry_data }}"
-
-- name: Set filebeat data ownership (1000:1000)
-  command: chown -R 1000:1000 "{{ filebeat_data_dir }}"
 
 - name: Ensure CNI directory exists
   file:

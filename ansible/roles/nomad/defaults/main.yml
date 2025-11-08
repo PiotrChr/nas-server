@@ -1,30 +1,96 @@
-prom_data_dir: /data/metrics/prometheus
-graf_data_dir: /data/metrics/grafana
-elastic_data_dir: /data/metrics/elastic
-bulk_data_dir: /bulk2/data
-sys_data_dir:  /data/general
-postgres: /data/postgres
+---
+nomad_host_volumes:
+  - name: prom_data
+    path: /data/metrics/prometheus
+    read_only: false
+    owner: "65534"
+    group: "65534"
+    recurse: true
+  - name: graf_data
+    path: /data/metrics/grafana
+    read_only: false
+    owner: "472"
+    group: "472"
+    recurse: true
+  - name: elastic_data
+    path: /data/metrics/elastic
+    read_only: false
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  - name: bulk_data
+    path: /bulk2/data
+    read_only: false
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  - name: sys_data
+    path: /data/general
+    read_only: false
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  - name: postgres
+    path: /data/postgres
+    read_only: false
+    owner: "999"
+    group: "999"
+    recurse: true
+  - name: caddy_data
+    path: /data/proxy/caddy/data
+    read_only: false
+  - name: caddy_conf
+    path: /data/proxy/caddy/config
+    read_only: false
+  - name: torrent_downloads
+    path: /fast/downloads
+    read_only: false
+  - name: torrent_config
+    path: /fast/torrent_config
+    read_only: false
+  - name: plex_config
+    path: /fast/plex/config
+    read_only: false
+  - name: plex_transcode
+    path: /fast/plex/transcode
+    read_only: false
+  - name: plex_media
+    path: /fast/plex/media
+    read_only: false
+  - name: movies_library
+    path: /fast/Movies
+    read_only: false
+  - name: music_library
+    path: /fast/Music
+    read_only: false
+  - name: redis_data
+    path: /data/redis
+    read_only: false
+    owner: "999"
+    group: "999"
+    recurse: true
+  - name: immich_uploads
+    path: /bulk/immich/uploads
+    read_only: false
+  - name: immich_ml_cache
+    path: /fast/immich/ml-cache
+    read_only: false
+  - name: docker_registry_data
+    path: /bulk1/docker/registry_data
+    read_only: false
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  - name: docker_containers
+    path: /var/lib/docker/containers
+    read_only: true
+    ensure: false
+  - name: filebeat_data
+    path: /data/filebeat
+    read_only: false
+    owner: "1000"
+    group: "1000"
+    recurse: true
 
-caddy_data_dir: /data/proxy/caddy/data
-caddy_config_dir: /data/proxy/caddy/config
-
-torrent_downloads_dir: /fast/downloads
-torrent_config_dir: /fast/torrent_config
-
-plex_config_dir: /fast/plex/config
-plex_transcode_dir: /fast/plex/transcode
-plex_media_dir: /fast/plex/media
-
-movies_library_dir: /fast/Movies
-music_library_dir: /fast/Music
-
-redis_data_dir: /data/redis
-
-immich_uploads_dir: /bulk/immich/uploads
-immich_ml_cache_dir: /fast/immich/ml-cache
-
-docker_registry_data: /bulk1/docker/registry_data
-
-docker_containers_dir: /var/lib/docker/containers
-
-filebeat_data_dir: /data/filebeat
+nomad_enabled_jobs: []
+nomad_remote_jobs_dir: /opt/nomad/jobs

@@ -4,6 +4,15 @@
   become: yes
   vars_files:
     - group_vars/all.yml
+  pre_tasks:
+    - name: Check for generated variables
+      stat:
+        path: "{{ playbook_dir }}/group_vars/generated.yml"
+      register: generated_vars_file
+    - name: Load generated variables
+      include_vars:
+        file: "{{ playbook_dir }}/group_vars/generated.yml"
+      when: generated_vars_file.stat.exists
 
   roles:
     - base

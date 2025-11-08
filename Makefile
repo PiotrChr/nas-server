@@ -1,4 +1,4 @@
-.PHONY: default help ssh ping run check run-samba run-postgres run-grafana run-caddy run-node-exporter run-cadvisor run-prometheus check-env check-envsubst run-postgres-exporter run-elasticsearch run-kibana run-filebeat run-snmp-exporter run-qbittorrent
+.PHONY: default help setup ssh ping run check run-samba run-postgres run-grafana run-caddy run-node-exporter run-cadvisor run-prometheus check-env check-envsubst run-postgres-exporter run-elasticsearch run-kibana run-filebeat run-snmp-exporter run-qbittorrent
 
 SHELL := /bin/bash
 
@@ -7,6 +7,9 @@ ANSIBLE_PLAYBOOK := ansible/site.yml
 INVENTORY := ansible/inventory/hosts
 
 default: help
+
+setup:
+	@python3 scripts/bootstrap.py
 
 # Helpers
 check-env:
@@ -108,6 +111,7 @@ run-filebeat:
 
 help:
 	@echo "Makefile commands:"
+	@echo "  setup          - Run the interactive bootstrap (prereqs, inventory, vars)"
 	@echo "  ping            - Ping the NAS server using Ansible"
 	@echo "  check           - Check what changes would be made by the Ansible playbook"
 	@echo "  check-env       - Check if the .env file exists"

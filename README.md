@@ -80,10 +80,18 @@ todo/
 
 ## Getting Started
 
-1. **Bootstrap the host manually (optional but recommended).**  
+1. **Run the interactive bootstrap script.**
+
+   ```bash
+   python3 scripts/bootstrap.py
+   ```
+
+   The script bootstraps a local `.venv` (unless `NAS_BOOTSTRAP_SKIP_VENV=1`), installs Python dependencies from `requirements.txt`, verifies that Ansible and Nomad CLIs exist (installing them via Homebrew/apt/dnf when possible), provisions or reuses an SSH key, uploads the public key, writes `ansible/inventory/hosts`, builds `ansible/group_vars/generated.yml` with the host-volume matrix, and stages the selected Nomad job specs in `server/nomad-jobs/`. Answers are cached in `.nas-setup.json`, so you can rerun the script to tweak mounts or services without re-entering everything.
+
+2. **Bootstrap the host manually (optional but recommended).**  
    Follow `resources/docs/Setup.md` for the minimal Ubuntu baseline before automation.
 
-2. **Prepare environment variables.**
+3. **Prepare environment variables.**
 
    ```bash
    cp .env.dist .env
@@ -97,7 +105,7 @@ todo/
    * `NOMAD_ADDR` (e.g. `http://nomad.home:4646`) to make the Nomad CLI and Makefile targets work against the UI/API.
    * `PLEX_CLAIM` (optional) for first-run pairing of the Plex container with your Plex account.
 
-3. **Provision the host.**
+4. **Provision the host.**
 
    ```bash
    make run
@@ -105,7 +113,7 @@ todo/
 
    Installs Nomad, Consul, Docker, dnsmasq, configures firewall access (`80`, `443`, `4646`, `8500`, `8080`, `8090`, `9090`, `9100`, `9116`, `9187`), and prepares host volumes.
 
-4. **Deploy Nomad workloads via the Makefile.**
+5. **Deploy Nomad workloads via the Makefile.**
 
    | Command                  | Deploys / Updates                           |
    | ------------------------ | ------------------------------------------- |

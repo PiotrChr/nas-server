@@ -1,1 +1,6 @@
 .env
+.nas-setup.json
+ansible/group_vars/generated.yml
+ansible/inventory/hosts
+server/
+.venv/

@@ -1,0 +1,3 @@
+---
+# Static group-wide defaults live here. Per-install overrides are written
+# to ansible/group_vars/generated.yml by scripts/bootstrap.py.
