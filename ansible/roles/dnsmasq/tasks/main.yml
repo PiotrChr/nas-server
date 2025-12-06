@@ -17,7 +17,7 @@
       server=8.8.8.8
       address=/.home/{{ ansible_default_ipv4.address }}
       server=/consul/127.0.0.1#8600
-      interface={{ ansible_default_ipv4.interface }}
+      listen-address=127.0.0.1,{{ ansible_default_ipv4.address }}
       bind-interfaces
 
 - name: Allow DNS (TCP/UDP) on LAN

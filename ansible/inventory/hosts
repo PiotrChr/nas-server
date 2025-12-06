@@ -1,2 +1,8 @@
 [nas]
 192.168.1.119 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_ed25519
+
+[pi5-1]
+192.168.1.141 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[pi5-2]
+192.168.1.69 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
