@@ -1,0 +1,6 @@
+nomad_node_name: pi5-2
+nomad_node_class: pi5
+consul_node_name: pi5-2
+
+base_mount_points: []
+nomad_host_volumes: []

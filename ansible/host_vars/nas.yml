@@ -1,0 +1,34 @@
+nomad_node_name: nas
+nomad_node_class: nas
+consul_node_name: nas
+
+base_mount_points:
+  - /data
+  - /fast
+  - /bulk1
+  - /bulk2
+  - /archive
+
+nomad_host_volumes:
+  - { name: prom_data, path: /data/metrics/prometheus, read_only: false, owner: "65534", group: "65534" }
+  - { name: graf_data, path: /data/metrics/grafana, read_only: false, owner: "472", group: "472" }
+  - { name: elastic_data, path: /data/metrics/elastic, read_only: false, owner: "1000", group: "1000" }
+  - { name: bulk_data, path: /bulk2/data, read_only: false, owner: "1000", group: "1000" }
+  - { name: sys_data, path: /data/general, read_only: false, owner: "1000", group: "1000" }
+  - { name: postgres, path: /data/postgres, read_only: false, owner: "999", group: "999" }
+  - { name: caddy_data, path: /data/proxy/caddy/data, read_only: false }
+  - { name: caddy_conf, path: /data/proxy/caddy/config, read_only: false }
+  - { name: torrent_downloads, path: /fast/downloads, read_only: false }
+  - { name: torrent_config, path: /fast/torrent_config, read_only: false }
+  - { name: plex_config, path: /fast/plex/config, read_only: false }
+  - { name: plex_transcode, path: /fast/plex/transcode, read_only: false }
+  - { name: plex_media, path: /fast/plex/media, read_only: false }
+  - { name: movies_library, path: /fast/Movies, read_only: false }
+  - { name: music_library, path: /fast/Music, read_only: false }
+  - { name: redis_data, path: /data/redis, read_only: false, owner: "999", group: "999" }
+  - { name: immich_uploads, path: /bulk/immich/uploads, read_only: false }
+  - { name: immich_ml_cache, path: /fast/immich/ml-cache, read_only: false }
+  - { name: docker_registry_data, path: /bulk1/docker/registry_data, read_only: false, owner: "1000", group: "1000" }
+  - { name: docker_containers, path: /var/lib/docker/containers, read_only: true }
+  - { name: filebeat_data, path: /data/filebeat, read_only: false, owner: "1000", group: "1000" }
+  - { name: gitea_data, path: /fast/gitea, read_only: false, owner: "1000", group: "1000" }

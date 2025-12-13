@@ -1,6 +1,10 @@
 job "kibana" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
   type        = "service"
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   group "kibana" {
     network {

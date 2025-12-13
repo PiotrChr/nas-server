@@ -1,0 +1,7 @@
+nomad_datacenter: home
+consul_datacenter: home
+
+# Default client/server flags can be overridden per-group/host
+nomad_server: false
+nomad_client: true
+consul_server: false

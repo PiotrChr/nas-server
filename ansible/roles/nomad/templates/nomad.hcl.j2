@@ -1,58 +1,56 @@
-data_dir  = "/opt/nomad"
-bind_addr = "0.0.0.0"
+data_dir   = "/opt/nomad"
+bind_addr  = "0.0.0.0"
+name       = "{{ nomad_node_name }}"
+datacenter = "{{ nomad_datacenter }}"
 
+{% if nomad_server %}
 server {
   enabled          = true
-  bootstrap_expect = 1
+  bootstrap_expect = {{ nomad_server_bootstrap_expect }}
+  {% if nomad_retry_join | length > 0 %}
+  server_join {
+    retry_join = [
+      {% for addr in nomad_retry_join -%}
+      "{{ addr }}"{% if not loop.last %},{% endif %}
+      {% endfor -%}
+    ]
+  }
+  {% endif %}
 }
+{% endif %}
 
 consul {
   address = "127.0.0.1:8500"
 }
 
+{% if nomad_client %}
 client {
   enabled = true
+  {% if nomad_node_class %}node_class = "{{ nomad_node_class }}"{% endif %}
+  {% if nomad_retry_join | length > 0 %}
+  server_join {
+    retry_join = [
+      {% for addr in nomad_retry_join -%}
+      "{{ addr }}"{% if not loop.last %},{% endif %}
+      {% endfor -%}
+    ]
+  }
+  {% else %}
+  servers = ["127.0.0.1"]
+  {% endif %}
 
-  host_volume "prom_data"        { path = "{{ prom_data_dir }}" read_only = false }
-  host_volume "graf_data"        { path = "{{ graf_data_dir }}" read_only = false }
-  host_volume "elastic_data"     { path = "{{ elastic_data_dir }}" read_only = false }
-  host_volume "bulk_data"        { path = "{{ bulk_data_dir }}" read_only = false }
-  host_volume "sys_data"         { path = "{{ sys_data_dir }}"  read_only = false }
-  host_volume "postgres"         { path = "{{ postgres }}" read_only = false }
+  {% for volume in nomad_host_volumes -%}
+  host_volume "{{ volume.name }}" { path = "{{ volume.path }}" read_only = {{ volume.read_only | default(false) | ternary('true','false') }} }
+  {% endfor %}
 
-  host_volume "caddy_data"       { path = "{{ caddy_data_dir }}"  read_only = false }
-  host_volume "caddy_conf"       { path = "{{ caddy_config_dir }}" read_only = false }
-
-  host_volume "torrent_downloads" { path = "{{ torrent_downloads_dir }}" read_only = false }
-  host_volume "torrent_config"    { path = "{{ torrent_config_dir }}" read_only = false }
-
-  host_volume "plex_config"       { path = "{{ plex_config_dir }}" read_only = false }
-  host_volume "plex_transcode"    { path = "{{ plex_transcode_dir }}" read_only = false }
-  host_volume "plex_media"        { path = "{{ plex_media_dir }}" read_only = false }
-
-  host_volume "movies_library"  { path = "{{ movies_library_dir }}" read_only = false }
-  host_volume "music_library"   { path = "{{ music_library_dir }}" read_only = false }
-  host_volume "redis_data"      { path = "{{ redis_data_dir }}" read_only = false }
-
-  host_volume "immich_uploads"   { path = "{{ immich_uploads_dir }}" read_only = false }
-  host_volume "immich_ml_cache"   { path = "{{ immich_ml_cache_dir }}" read_only = false }
-
-  host_volume "docker_registry_data" { path = "{{ docker_registry_data }}" read_only = false }
-
-  host_volume "docker_containers" { path = "{{ docker_containers_dir }}" read_only = true }
-  host_volume "filebeat_data"    { path = "{{ filebeat_data_dir }}" read_only = false }
-
-  cni_path       = "/opt/cni/bin:/usr/lib/cni:/usr/libexec/cni"
-  cni_config_dir = "/etc/cni/net.d"
+  cni_path       = "{{ nomad_cni_paths }}"
+  cni_config_dir = "{{ nomad_cni_config_dir }}"
 }
+{% endif %}
 
 plugin "docker" {
   config {
-    # allow host bind-mounts from task config.volumes = ["host:ctr:mode"]
-    volumes {
-      enabled = true
-    }
-    # allow tasks to request privileged=true (needed for cAdvisor)
+    volumes { enabled = true }
     allow_privileged = true
   }
 }

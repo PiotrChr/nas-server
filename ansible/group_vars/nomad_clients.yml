@@ -1,0 +1,9 @@
+nomad_server: false
+nomad_client: true
+nomad_node_class: pi5
+nomad_retry_join:
+  - 192.168.1.119
+
+consul_server: false
+consul_retry_join:
+  - 192.168.1.119

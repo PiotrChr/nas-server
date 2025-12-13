@@ -1,8 +1,14 @@
+[nomad_servers]
+nas ansible_host=192.168.1.119 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_ed25519
+
+[nomad_clients]
+; pi5-1 ansible_host=192.168.1.141 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
+pi5-2 ansible_host=192.168.1.69 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[nomad:children]
+nomad_servers
+nomad_clients
+
+# Compatibility group name for the NAS host
 [nas]
-192.168.1.119 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_ed25519
-
-[pi5-1]
-192.168.1.141 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
-
-[pi5-2]
-192.168.1.69 ansible_user=pchrusciel ansible_ssh_private_key_file=~/.ssh/id_rsa
+nas

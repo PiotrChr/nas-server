@@ -1,6 +1,10 @@
 job "docker-registry" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
   type        = "service"
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   group "registry" {
     count = 1

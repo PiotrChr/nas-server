@@ -102,9 +102,9 @@ run-docker-registry:
 	@bash -c 'set -a && source .env && set +a && \
 	envsubst < nomad/jobs/docker-registry.nomad.hcl | nomad job run -'
 
-run-filebeat:
+run-gitea:
 	@bash -c 'set -a && source .env && set +a && \
-	envsubst < nomad/jobs/filebeat.nomad.hcl | nomad job run -'
+	envsubst < nomad/jobs/gitea.nomad.hcl | nomad job run -'
 
 help:
 	@echo "Makefile commands:"
@@ -130,6 +130,6 @@ help:
 	@echo "  run-redis       - Deploy or update the Redis Nomad job"
 	@echo "  run-immich      - Deploy or update the Immich Nomad job"
 	@echo "  run-docker-registry - Deploy or update the Docker Registry Nomad job"
-	@echo "  run-filebeat    - Deploy or update the Filebeat Nomad job"
+	@echo "  run-gitea       - Deploy or update the Gitea Nomad job"
 	@echo "  ssh             - SSH into the NAS server"
 	@echo "  help            - Show this help message"

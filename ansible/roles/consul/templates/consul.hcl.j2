@@ -1,13 +1,25 @@
-datacenter = "home"
-node_name  = "nas"
+datacenter = "{{ consul_datacenter }}"
+node_name  = "{{ consul_node_name }}"
 
-server            = true
-bootstrap_expect  = 1
+server = {{ 'true' if consul_server else 'false' }}
+{% if consul_server %}
+bootstrap_expect = {{ consul_bootstrap_expect }}
+{% endif %}
 
 bind_addr      = "{{ ansible_default_ipv4.address }}"
 advertise_addr = "{{ ansible_default_ipv4.address }}"
 client_addr    = "0.0.0.0"
 
+{% if consul_retry_join | length > 0 %}
+retry_join = [
+  {% for addr in consul_retry_join -%}
+  "{{ addr }}"{% if not loop.last %},{% endif %}
+  {% endfor -%}
+]
+{% endif %}
+
 data_dir = "/opt/consul"
 
+{% if consul_ui_enable %}
 ui_config { enabled = true }
+{% endif %}

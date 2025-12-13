@@ -1,6 +1,10 @@
 job "caddy" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
   type        = "service"
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   group "proxy" {
     network {
@@ -60,7 +64,6 @@ job "caddy" {
             reverse_proxy 192.168.1.149
         }
         
-        # TODO: Fix this, qbittorrent doesn't bind to localhost properly
         http://torrent.home {
             reverse_proxy 192.168.1.119:8111
         }
@@ -75,6 +78,10 @@ job "caddy" {
 
         http://registry.home {
             reverse_proxy 192.168.1.119:5000
+        }
+
+        http://git.home {
+            reverse_proxy 192.168.1.119:3001
         }
 
         EOT

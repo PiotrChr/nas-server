@@ -1,6 +1,10 @@
 job "prometheus" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
   type = "service"
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   group "prom" {
     network {
@@ -27,7 +31,7 @@ job "prometheus" {
           scrape_interval: 15s
           evaluation_interval: 15s
           external_labels:
-            dc: dc1
+            dc: home
         scrape_configs:
           - job_name: "self"
             static_configs:

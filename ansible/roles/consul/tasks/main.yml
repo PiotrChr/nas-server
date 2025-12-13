@@ -6,7 +6,7 @@
 
 - name: Add HashiCorp repo
   apt_repository:
-    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    repo: "deb [arch={{ consul_repo_arch }}] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
     filename: hashicorp
     state: present
 
@@ -52,7 +52,7 @@
       TimeoutStartSec=0
   notify: daemon-reload consul
 
-- name: Allow Consul UI/API and DNS on LAN
+- name: Allow Consul UI/API and DNS on LAN (servers)
   ufw:
     rule: allow
     port: "{{ item.port }}"
@@ -62,10 +62,21 @@
     - { port: "8500", proto: "tcp" }   # HTTP/UI
     - { port: "8600", proto: "tcp" }   # DNS TCP
     - { port: "8600", proto: "udp" }   # DNS UDP
-    - { port: "8300", proto: "tcp" }   # server RPC (harmless on single node)
+    - { port: "8300", proto: "tcp" }   # server RPC
     - { port: "8301", proto: "tcp" }   # serf LAN TCP
     - { port: "8301", proto: "udp" }   # serf LAN UDP
-  notify: daemon-reload consul
+  when: consul_server | bool
+
+- name: Allow Consul LAN gossip on clients
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    src: 192.168.1.0/24
+  loop:
+    - { port: "8301", proto: "tcp" }
+    - { port: "8301", proto: "udp" }
+  when: not consul_server | bool
 
 - name: Enable & start Consul
   systemd:

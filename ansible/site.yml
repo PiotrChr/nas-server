@@ -1,9 +1,7 @@
----
-- name: Configure NAS Home Server
-  hosts: nas
+--- 
+- name: Configure Nomad Servers (NAS)
+  hosts: nomad_servers
   become: yes
-  vars_files:
-    - group_vars/all.yml
 
   roles:
     - base
@@ -12,3 +10,13 @@
     - dnsmasq
     - nomad
     - samba
+
+- name: Configure Nomad Clients (Pi nodes)
+  hosts: nomad_clients
+  become: yes
+
+  roles:
+    - base
+    - docker
+    - consul
+    - nomad

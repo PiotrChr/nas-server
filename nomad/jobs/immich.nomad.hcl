@@ -1,6 +1,10 @@
 job "immich" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
   type        = "service"
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   # If media/volumes exist only on one node, pin the job there:
   # constraint {

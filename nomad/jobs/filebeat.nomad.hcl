@@ -1,6 +1,10 @@
 job "filebeat" {
   type        = "system"
-  datacenters = ["dc1"]
+  datacenters = ["home"]
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
 
   group "filebeat" {
     network {

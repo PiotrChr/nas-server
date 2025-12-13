@@ -1,5 +1,9 @@
 job "node-exporter" {
-  datacenters = ["dc1"]
+  datacenters = ["home"]
+  constraint {
+    attribute = "${node.class}"
+    value     = "nas"
+  }
   type = "service"
   
   group "node" {

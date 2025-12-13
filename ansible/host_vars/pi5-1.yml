@@ -1,0 +1,7 @@
+nomad_node_name: pi5-1
+nomad_node_class: pi5
+consul_node_name: pi5-1
+
+# Keep client nodes lean; extend if you add local volumes later.
+base_mount_points: []
+nomad_host_volumes: []
